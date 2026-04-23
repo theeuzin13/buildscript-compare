@@ -1,0 +1,14 @@
+pc Workstation {
+   cpu = "Intel i7 12700";
+   motherboard = "Z690";
+   ram = "32GB DDR5";
+   gpu = "RTX 4070";
+   storage = "SSD 2TB";
+   psu = "750W";
+   case = "Full Tower";
+   cooler = "Water Cooler";
+}
+
+
+show Workstation;
+check Workstation;
