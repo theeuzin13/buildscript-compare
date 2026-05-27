@@ -1,69 +1,64 @@
 # BuildScript - Linguagem Temática de Hardware
 
-Este projeto consiste em um interpretador completo para a **BuildScript**, uma linguagem de programação fictícia com sintaxe inspirada em peças e conceitos de hardware de computadores. Desenvolvido como trabalho para a disciplina de **Compiladores**.
+Um interpretador completo para a **BuildScript**, uma linguagem de programação acadêmica com sintaxe baseada em peças e conceitos de hardware. Desenvolvido para a disciplina de **Compiladores**.
 
 ---
 
-## 📂 Estrutura do Projeto
+## 🚀 Como Executar (Passo a Passo)
 
-*   **`main.py`**  
-    Ponto de entrada do sistema. Lê o arquivo `.bs` contendo o código-fonte, inicia o processo de tokenização (Léxico) e executa as instruções (Interpretador).
-*   **`lexer.py`**  
-    O **Analisador Léxico**. Converte o texto bruto do código-fonte em um fluxo de **Tokens** significativos usando expressões regulares (RegEx).
-*   **`interpreter.py`**  
-    O **Interpretador / Analisador Sintático**. Processa o fluxo de tokens, gerencia a tabela de símbolos (variáveis locais/globais), avalia expressões aritméticas/lógicas e controla os desvios de fluxo (condicionais, repetições e chamadas de funções).
-*   **`builds/`**  
-    Diretório contendo exemplos de scripts escritos na linguagem (`exemplo1.bs` a `exemplo5.bs`) para testes práticos de cada funcionalidade.
+O projeto possui duas formas de execução: **Modo Gráfico (Web IDE)** e **Modo Terminal (CLI)**. 
+Requisito: **Python 3** instalado na máquina.
+
+### Opção 1: Modo Gráfico (Recomendado)
+Inicia uma IDE visual no seu navegador, permitindo editar, tokenizar e interpretar o código.
+
+**No Windows:**
+1. Abra o Prompt de Comando (CMD) ou PowerShell na pasta do projeto.
+2. Execute o comando: `python server.py`
+3. Abra o navegador e acesse: `http://localhost:8000`
+
+**No Linux / macOS:**
+1. Abra o terminal na pasta do projeto.
+2. Execute o comando: `python3 server.py`
+3. Abra o navegador e acesse: `http://localhost:8000`
+
+### Opção 2: Modo Terminal (CLI)
+Executa arquivos `.bs` diretamente no terminal.
+
+**No Windows:**
+1. Abra o CMD ou PowerShell na pasta do projeto.
+2. Execute o interpretador passando o arquivo `.bs` desejado, exemplo:
+   `python main.py builds/exemplo1.bs`
+
+**No Linux / macOS:**
+1. Abra o terminal na pasta do projeto.
+2. Execute o arquivo, exemplo:
+   `python3 main.py builds/exemplo1.bs`
+
+*(Você pode testar também os arquivos `exemplo2.bs` até `exemplo5.bs`)*
 
 ---
 
-## 🔌 Vocabulário da Linguagem
+## 📂 Arquivos Essenciais
 
-A linguagem substitui os comandos tradicionais de programação por termos temáticos de computação:
+*   **`server.py` & `index.html`**: Servidor local e interface gráfica (Web IDE) para utilizar o compilador visualmente.
+*   **`main.py`**: Ponto de entrada do sistema via terminal. Lê o arquivo, aciona o analisador léxico e depois o interpretador.
+*   **`lexer.py`**: **Analisador Léxico**. Lê o texto bruto e agrupa os caracteres em tokens significativos (com suporte a expressões regulares).
+*   **`interpreter.py`**: **Interpretador / Analisador Sintático**. Avalia a árvore de tokens, controla o fluxo de execução, variáveis e funções.
+*   **`builds/`**: Pasta com os programas de exemplo em BuildScript.
 
-| Termo em BuildScript | Equivalente Tradicional | Descrição |
+---
+
+## 🔌 Vocabulário Básico
+
+| Comando em BuildScript | Equivalente | O que faz |
 | :--- | :--- | :--- |
-| `POWER_ON;` | `{` ou início | Inicializa a execução do programa. |
-| `POWER_OFF;` | `}` ou fim | Encerra a execução do programa. |
-| `SLOT` | `int` | Declaração de variável do tipo número inteiro. |
-| `VOLTAGE` | `float` | Declaração de variável do tipo número decimal (real). |
-| `LABEL` | `string` | Declaração de variável do tipo texto. |
-| `LED` | `bool` | Declaração de variável do tipo lógico (booleano). |
-| `GREENSCREEN` | `true` | Valor booleano Verdadeiro. |
-| `BLUESCREEN` | `false` | Valor booleano Falso. |
-| `RUNCIRCUIT` | `if` | Estrutura condicional (Se). |
-| `SHORTCIRCUIT` | `else` | Estrutura condicional alternativa (Senão). |
-| `RUNCOOLER` | `for` / `while` | Início do laço de repetição. |
-| `STOPCOOLER` | fim do loop | Fim do laço de repetição. |
-| `CPU` | `def` / `function` | Declaração de nova função. |
-| `EJECT` | `return` | Retorno de valor em uma função. |
-| `MONITOR` | `print()` | Saída de dados (exibe na tela). |
-| `KEYBOARD` | `input()` | Entrada de dados (lê do teclado). |
-| Prefixo `$` | ex: `$var` | Identifica uma variável. |
-| Prefixo `!` | ex: `!func()` | Identifica uma chamada ou declaração de função. |
+| `POWER_ON;` / `POWER_OFF;` | `{ }` ou `main()` | Inicia e finaliza a execução do programa. |
+| `SLOT` / `VOLTAGE` / `LABEL` | `int` / `float` / `string` | Declaração de variáveis (inteiro, decimal e texto). |
+| `LED` | `bool` | Variável booleana (`GREENSCREEN` = True, `BLUESCREEN` = False). |
+| `RUNCIRCUIT` / `SHORTCIRCUIT`| `if` / `else` | Estrutura condicional. |
+| `RUNCOOLER` / `STOPCOOLER` | `for` / `while` | Início e fim de laços de repetição. |
+| `CPU` / `EJECT` | `function` / `return`| Declaração de função e retorno de valor. |
+| `MONITOR` / `KEYBOARD` | `print()` / `input()` | Saída e entrada de dados na tela. |
 
----
-
-## 🚀 Como Executar
-
-Certifique-se de ter o **Python 3** instalado em sua máquina.
-
-1. Abra o terminal na pasta raiz do projeto.
-2. Execute o interpretador passando o caminho do script desejado como argumento:
-
-```bash
-# Rodar o Exemplo 1 (Interativo)
-python3 main.py builds/exemplo1.bs
-
-# Rodar o Exemplo 2 (Cálculo de RAM)
-python3 main.py builds/exemplo2.bs
-
-# Rodar o Exemplo 3 (Teste de Condicional e Retorno)
-python3 main.py builds/exemplo3.bs
-
-# Rodar o Exemplo 4 (Laço de Repetição)
-python3 main.py builds/exemplo4.bs
-
-# Rodar o Exemplo 5 (Lógica Booleana Complexa)
-python3 main.py builds/exemplo5.bs
-```
+*(Nota: Variáveis sempre começam com `$` e funções com `!`)*
