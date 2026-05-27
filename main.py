@@ -7,7 +7,6 @@ def load_script(path):
         return f.read()
 
 def main():
-    # Se o usuário passar a flag --tokens, apenas tokeniza e imprime no formato em português do professor
     if len(sys.argv) > 1 and sys.argv[1] == "--tokens":
         script_path = sys.argv[2] if len(sys.argv) > 2 else "builds/exemplo1.bs"
         try:

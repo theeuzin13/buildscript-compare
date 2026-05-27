@@ -14,7 +14,6 @@ PORT = 8000
 class BuildScriptIDEHandler(http.server.BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
-        # Desabilita o log padrão no terminal para deixar o output limpo
         pass
 
     def do_GET(self):
@@ -46,7 +45,6 @@ class BuildScriptIDEHandler(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"error": f"JSON inválido: {e}"}).encode('utf-8'))
                 return
 
-            # --- Mock do INPUT() do Teclado ---
             input_idx = 0
             def mock_input():
                 nonlocal input_idx
@@ -54,12 +52,11 @@ class BuildScriptIDEHandler(http.server.BaseHTTPRequestHandler):
                     val = inputs[input_idx]
                     input_idx += 1
                     return val
-                return "Componente Padrão" # Fallback se faltar entrada
+                return "Componente Padrão"
 
             original_input = builtins.input
             builtins.input = mock_input
 
-            # --- Captura de STDOUT (MONITOR) ---
             captured_stdout = io.StringIO()
             sys.stdout = captured_stdout
 
@@ -68,26 +65,21 @@ class BuildScriptIDEHandler(http.server.BaseHTTPRequestHandler):
             error_message = None
 
             try:
-                # 1. Análise Léxica
                 lexer = BuildScriptLexer(code)
                 tokens = list(lexer.tokenize())
                 tokens_formatted = BuildScriptLexer.format_tokens(tokens)
 
-                # 2. Execução (Interpretador)
                 interpreter = BuildScriptInterpreter(tokens)
                 interpreter.run()
-                
+
                 execution_output = captured_stdout.getvalue()
             except Exception as e:
                 error_message = str(e)
-                # Se falhou após alguma impressão bem sucedida, pega o que já tinha no stdout
                 execution_output = captured_stdout.getvalue()
             finally:
-                # Restaura stdout e input originais
                 sys.stdout = sys.__stdout__
                 builtins.input = original_input
 
-            # --- Resposta JSON ---
             self.send_response(200)
             self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
@@ -105,7 +97,6 @@ class BuildScriptIDEHandler(http.server.BaseHTTPRequestHandler):
 
 
 def main():
-    # Permite reutilizar a porta imediatamente se o servidor for reiniciado
     socketserver.TCPServer.allow_reuse_address = True
     with socketserver.TCPServer(("", PORT), BuildScriptIDEHandler) as httpd:
         print("==================================================")

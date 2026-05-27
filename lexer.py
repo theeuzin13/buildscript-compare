@@ -1,6 +1,5 @@
 import re
 
-# Dicionário de tradução de tokens para o formato em português 
 TOKEN_NAMES_PT = {
     'PROG_INIT': 'InicioPrograma',
     'PROG_END': 'FimPrograma',
@@ -61,17 +60,11 @@ class BuildScriptLexer:
 
             ('ID_FUNC', r'![a-zA-Z_][a-zA-Z0-9_]*'),
             
-            # Regras de variáveis válidas e mal formadas (ordem importa!)
             ('VAR', r'\$[a-z_][a-z0-9_]*'),
             ('MALFORMED_VAR', r'\$[a-zA-Z0-9_]+'),
-
-            # Regras de números válidos e mal formados
             ('MALFORMED_FLOAT', r'\d+\.[a-zA-Z_][a-zA-Z0-9_]*'),
             ('MALFORMED_ID', r'\b\d+[a-zA-Z_][a-zA-Z0-9_]*\b'),
             ('NUMBER', r'\d+(?:\.\d+)?'),
-
-
-            # Strings válidas e mal formadas (não fechadas)
             ('STRING', r'"[^"\\]*(?:\\.[^"\\]*)*"'),
             ('UNCLOSED_STRING', r'"[^"\\]*(?:\\.[^"\\]*)*'),
 
@@ -114,8 +107,6 @@ class BuildScriptLexer:
                 col += len(value)
                 continue
 
-            # --- Tratamento de Erros Léxicos Complexos ---
-            
             if kind == 'MALFORMED_VAR':
                 raise RuntimeError(
                     f"Erro Léxico: Identificador/variável mal formado: '{value}' na linha {line}, coluna {col}."
@@ -144,18 +135,12 @@ class BuildScriptLexer:
                 raise RuntimeError(
                     f"Erro Léxico: Símbolo não pertencente ao conjunto de símbolos terminais da linguagem: '{value}' na linha {line}, coluna {col}."
                 )
-
-            # --- Validação de Limites de Tamanho ---
-            
-            # Limite de tamanho de identificadores/variáveis (máx 30 caracteres, ignorando prefixos $ e !)
             if kind in ['VAR', 'ID_FUNC', 'ID']:
                 clean_len = len(value[1:]) if kind in ['VAR', 'ID_FUNC'] else len(value)
                 if clean_len > 30:
                     raise RuntimeError(
                         f"Erro Léxico: Tamanho do identificador '{value}' excede o limite de 30 caracteres na linha {line}, coluna {col}."
                     )
-
-            # Limite de tamanho de números (máx 15 dígitos/caracteres)
             if kind == 'NUMBER':
                 if len(value) > 15:
                     raise RuntimeError(
@@ -170,7 +155,6 @@ class BuildScriptLexer:
 
     @staticmethod
     def format_tokens(tokens: list[dict]) -> str:
-        """Formata os tokens no padrão solicitado pelo professor."""
         formatted = []
         for t in tokens:
             if t['token'] == 'EOF':

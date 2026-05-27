@@ -16,16 +16,6 @@ class FunctionDef:
 
 
 class BuildScriptInterpreter:
-    """Interpreter bem simples para a linguagem (tokens customizados + sintaxe C-like).
-
-    Suporta:
-    - POWER_ON; ... POWER_OFF;
-    - declaração de função: CPU !nome() { ... }
-    - chamada de função: !nome();
-    - variáveis: LABEL $x; $x = KEYBOARD();
-    - saída: MONITOR("a", $x, "b");
-    - entrada: KEYBOARD()
-    """
 
     def __init__(self, tokens: list[dict]):
         self.tokens = tokens
@@ -33,7 +23,6 @@ class BuildScriptInterpreter:
         self.functions: dict[str, FunctionDef] = {}
         self.globals: dict[str, Any] = {}
 
-    # ----------------- helpers -----------------
     def _cur(self) -> dict:
         return self.tokens[self.pos]
 
@@ -64,7 +53,6 @@ class BuildScriptInterpreter:
             return True
         return False
 
-    # ----------------- entrypoint -----------------
     def run(self):
         self._expect('PROG_INIT')
         self._expect('SEMICOLON')
@@ -79,19 +67,17 @@ class BuildScriptInterpreter:
         self._expect('SEMICOLON')
         self._expect('EOF')
 
-    # ----------------- parsing: top-level -----------------
     def _parse_function_def(self):
-        self._expect('FUNC_DEF')  # CPU
-        name_tok = self._expect('ID_FUNC')  # !cadastrar_peca
+        self._expect('FUNC_DEF')
+        name_tok = self._expect('ID_FUNC')
         fn_name = name_tok['valor']
 
         self._expect('LPAREN')
         params: list[str] = []
         if not self._at('RPAREN'):
-            # params estilo C: (LABEL $x, SLOT $y)
             while True:
                 if self._at('TYPE_VAR'):
-                    self._advance()  # tipo (não usamos ainda)
+                    self._advance()
                 var_tok = self._expect('VAR')
                 params.append(var_tok['valor'])
                 if self._consume('COMMA'):
@@ -118,7 +104,6 @@ class BuildScriptInterpreter:
         collected.append({'token': 'EOF', 'valor': '', 'line': self._cur().get('line'), 'col': self._cur().get('col')})
         return collected
 
-    # ----------------- parsing/execution: statements -----------------
     def _parse_statement(self, env: dict[str, Any]) -> Any:
         if self._at('TYPE_VAR'):
             self._advance()
