@@ -143,6 +143,23 @@
             flex: 1;
             display: flex;
             min-height: 450px;
+            overflow: hidden;
+        }
+
+        .line-numbers {
+            background: rgba(10, 15, 30, 0.5);
+            border-right: 1px solid var(--border-glass);
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            padding: 1.25rem 0.625rem 1.25rem 0.5rem;
+            text-align: right;
+            user-select: none;
+            white-space: pre;
+            overflow: hidden;
+            min-width: 2.75rem;
+            flex-shrink: 0;
         }
 
         textarea.code-editor {
@@ -661,6 +678,7 @@
             </div>
             
             <div class="editor-container">
+                <div class="line-numbers" id="lineNumbers">1</div>
                 <textarea class="code-editor" id="codeEditor" placeholder="// Digite seu código BuildScript aqui...&#10;// Ou selecione um dos exemplos acima!" spellcheck="false"></textarea>
             </div>
             
@@ -809,6 +827,15 @@ POWER_OFF;`
 
         let currentFileName = "programa.bs";
 
+        // === Numeração de Linhas ===
+        function updateLineNumbers() {
+            const editor = document.getElementById('codeEditor');
+            const lineNumbers = document.getElementById('lineNumbers');
+            const lineCount = editor.value.split('\n').length;
+            lineNumbers.textContent = Array.from({length: lineCount}, (_, i) => i + 1).join('\n');
+            lineNumbers.scrollTop = editor.scrollTop;
+        }
+
         // === Menu: Abrir arquivo ===
         function openFile() {
             document.getElementById("fileInput").click();
@@ -822,6 +849,7 @@ POWER_OFF;`
             reader.onload = (e) => {
                 document.getElementById("codeEditor").value = e.target.result;
                 document.getElementById("exampleSelect").value = "custom";
+                updateLineNumbers();
             };
             reader.readAsText(file, "UTF-8");
             event.target.value = "";
@@ -875,6 +903,7 @@ POWER_OFF;`
             if (document.getElementById("codeEditor").value.trim() && !confirm("Tem certeza? O código atual será perdido.")) return;
             document.getElementById("codeEditor").value = "";
             document.getElementById("exampleSelect").value = "";
+            updateLineNumbers();
         }
 
         // === Menu: Sair ===
@@ -894,7 +923,6 @@ POWER_OFF;`
             if (EXAMPLES[val]) {
                 document.getElementById("codeEditor").value = EXAMPLES[val];
                 currentFileName = val + ".bs";
-                // Ajusta entradas de teclado padrão se for o exemplo 1
                 if (val === "exemplo1") {
                     document.getElementById("keyboardInputs").value = "RTX 4070";
                 }
@@ -902,6 +930,7 @@ POWER_OFF;`
                 document.getElementById("codeEditor").value = "";
                 currentFileName = "programa.bs";
             }
+            updateLineNumbers();
         }
 
         // Navegação por abas
