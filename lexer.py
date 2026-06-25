@@ -163,12 +163,6 @@ class BuildScriptLexer:
             tokens.append({'token': kind, 'valor': value, 'line': line, 'col': col})
             col += len(value)
 
-        if len(tokens) > 0 and tokens[0]['token'] != 'PROG_INIT':
-            self.errors.append(
-                f"Erro Léxico: Programa deve iniciar com POWER_ON (encontrado '{tokens[0].get('valor')}') "
-                f"na linha {tokens[0].get('line')}, coluna {tokens[0].get('col')}."
-            )
-
         tokens.append({'token': 'EOF', 'valor': '', 'line': line, 'col': col})
         return tokens
 

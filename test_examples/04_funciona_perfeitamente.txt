@@ -1,0 +1,9 @@
+POWER_ON;
+
+CPU !saudacao(LABEL $nome) {
+    MONITOR("Ola, ", $nome, "!");
+}
+
+!saudacao("Mundo");
+
+POWER_OFF;

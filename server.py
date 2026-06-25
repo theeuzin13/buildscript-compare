@@ -27,6 +27,13 @@ class BuildScriptIDEHandler(http.server.BaseHTTPRequestHandler):
                     self.wfile.write(f.read().encode("utf-8"))
             except Exception as e:
                 self.wfile.write(f"Erro ao carregar index.html: {e}".encode("utf-8"))
+        elif self.path == "/shutdown":
+            self.send_response(200)
+            self.send_header("Content-type", "application/json; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "ok"}).encode('utf-8'))
+            import os
+            os._exit(0)
         else:
             self.send_response(404)
             self.end_headers()
@@ -64,7 +71,9 @@ class BuildScriptIDEHandler(http.server.BaseHTTPRequestHandler):
             tokens_formatted = ""
             syntax_tree = ""
             execution_output = ""
-            errors_list: list[str] = []
+            lex_errors: list[str] = []
+            syn_errors: list[str] = []
+            run_errors: list[str] = []
             error_type: str | None = None
 
             try:
@@ -78,7 +87,6 @@ class BuildScriptIDEHandler(http.server.BaseHTTPRequestHandler):
                 lex_errors = lexer.get_errors()
                 syn_errors = parser.get_errors()
 
-                errors_list = lex_errors + syn_errors
                 if lex_errors and syn_errors:
                     error_type = "lexico_sintatico"
                 elif lex_errors:
@@ -86,15 +94,14 @@ class BuildScriptIDEHandler(http.server.BaseHTTPRequestHandler):
                 elif syn_errors:
                     error_type = "sintatico"
 
-                if not errors_list:
+                if not lex_errors and not syn_errors:
                     syntax_tree = BuildScriptParser.format_tree(tree)
                     interpreter = BuildScriptInterpreter(tokens)
                     interpreter.run()
                     execution_output = captured_stdout.getvalue()
             except Exception as e:
-                errors_list.append(str(e))
-                if error_type is None:
-                    error_type = "execucao"
+                run_errors.append(str(e))
+                error_type = "execucao"
                 execution_output = captured_stdout.getvalue()
             finally:
                 sys.stdout = sys.__stdout__
@@ -104,12 +111,15 @@ class BuildScriptIDEHandler(http.server.BaseHTTPRequestHandler):
             self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
             
+            has_errors = bool(lex_errors or syn_errors or run_errors)
             resp = {
-                "success": len(errors_list) == 0,
+                "success": not has_errors,
                 "tokens": tokens_formatted,
                 "syntax": syntax_tree,
                 "output": execution_output,
-                "errors": errors_list,
+                "lexErrors": lex_errors,
+                "synErrors": syn_errors,
+                "runErrors": run_errors,
                 "errorType": error_type,
             }
             self.wfile.write(json.dumps(resp, ensure_ascii=False).encode('utf-8'))

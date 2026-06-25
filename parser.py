@@ -82,6 +82,26 @@ class BuildScriptParser:
         self.pos += 1
         return t
 
+    def _expect_rbrace(self) -> dict:
+        if self._at('EOF') or self._at('PROG_END'):
+            t = self._cur()
+            raise ParseError(
+                f"Erro Sintático: Chave aberta e não fechada — "
+                f"esperado '}}', encontrado {t['token']} "
+                f"na linha {t.get('line')}, coluna {t.get('col')}."
+            )
+        return self._expect('RBRACE')
+
+
+    def _expect_rparen(self) -> dict:
+        if self._at('EOF') or self._at('PROG_END') or self._at('RBRACE'):
+            t = self._cur()
+            raise ParseError(
+                f"Erro Sintático: Parêntese aberto e não fechado — "
+                f"esperado ')', encontrado {t['token']} "
+                f"na linha {t.get('line')}, coluna {t.get('col')}."
+            )
+        return self._expect('RPAREN')
     def _consume(self, kind: str) -> bool:
         if self._at(kind):
             self._advance()
@@ -121,11 +141,17 @@ class BuildScriptParser:
     def parse(self) -> ParseNode:
         root = ParseNode('program')
 
-        if self._at('PROG_INIT'):
+        if not self._at('PROG_INIT'):
+            t = self._cur()
+            self.errors.append(
+                f"Erro Sintático: Programa deve iniciar com POWER_ON "
+                f"(encontrado '{t.get('valor')}' na linha {t.get('line')}, coluna {t.get('col')})."
+            )
+        else:
             self._expect('PROG_INIT')
             self._expect('SEMICOLON')
 
-        while not self._at('PROG_END') and not self._at('EOF'):
+        while not self._at('PROG_END') and not self._at('EOF') and not self._at('RBRACE'):
             try:
                 if self._at('FUNC_DEF'):
                     root.add(self._parse_function_def())
@@ -134,6 +160,13 @@ class BuildScriptParser:
             except ParseError as e:
                 self.errors.append(str(e))
                 self._sync()
+
+        if self._at('RBRACE'):
+            t = self._advance()
+            self.errors.append(
+                f"Erro Sintático: Chave de fechamento '}}' inesperada "
+                f"na linha {t.get('line')}, coluna {t.get('col')}."
+            )
 
         if self._at('PROG_END'):
             self._expect('PROG_END')
@@ -164,20 +197,19 @@ class BuildScriptParser:
         params_node = ParseNode('params')
         if not self._at('RPAREN'):
             while True:
-                if self._at('TYPE_VAR'):
-                    self._advance()
+                self._expect('TYPE_VAR')
                 var_tok = self._expect('VAR')
                 params_node.add(ParseNode('param', var_tok['valor']))
                 if self._consume('COMMA'):
                     continue
                 break
-        self._expect('RPAREN')
+        self._expect_rparen()
         node.add(params_node)
 
         body_node = ParseNode('body')
         self._expect('LBRACE')
         self._parse_block_body(body_node)
-        self._expect('RBRACE')
+        self._expect_rbrace()
         node.add(body_node)
 
         return node
@@ -212,7 +244,7 @@ class BuildScriptParser:
                     if self._consume('COMMA'):
                         continue
                     break
-            self._expect('RPAREN')
+            self._expect_rparen()
             node.add(args_node)
             self._expect('SEMICOLON')
             return node
@@ -221,7 +253,7 @@ class BuildScriptParser:
             self._advance()
             self._expect('LPAREN')
             cond = self._parse_expr()
-            self._expect('RPAREN')
+            self._expect_rparen()
 
             if_node = ParseNode('if_stmt')
             if_node.add(ParseNode('condition').add(cond))
@@ -229,7 +261,7 @@ class BuildScriptParser:
             if_body = ParseNode('body')
             self._expect('LBRACE')
             self._parse_block_body(if_body)
-            self._expect('RBRACE')
+            self._expect_rbrace()
             if_node.add(if_body)
 
             if self._at('COND_ELSE'):
@@ -237,7 +269,7 @@ class BuildScriptParser:
                 else_body = ParseNode('body')
                 self._expect('LBRACE')
                 self._parse_block_body(else_body)
-                self._expect('RBRACE')
+                self._expect_rbrace()
                 if_node.add(ParseNode('else_stmt').add(else_body))
 
             return if_node
@@ -277,12 +309,12 @@ class BuildScriptParser:
                 while not self._at('RPAREN'):
                     incr_node.add(ParseNode('token', self._advance()['valor']))
                 node.add(incr_node)
-            self._expect('RPAREN')
+            self._expect_rparen()
 
             body_node = ParseNode('body')
             self._expect('LBRACE')
             self._parse_block_body(body_node)
-            self._expect('RBRACE')
+            self._expect_rbrace()
             node.add(body_node)
 
             self._expect('LOOP_END')
@@ -307,7 +339,7 @@ class BuildScriptParser:
                     if self._consume('COMMA'):
                         continue
                     break
-            self._expect('RPAREN')
+            self._expect_rparen()
             node.add(args_node)
             self._expect('SEMICOLON')
             return node
@@ -332,7 +364,7 @@ class BuildScriptParser:
             self._expect('LBRACE')
             body = ParseNode('body')
             self._parse_block_body(body)
-            self._expect('RBRACE')
+            self._expect_rbrace()
             node.add(body)
             return node
 
@@ -423,7 +455,7 @@ class BuildScriptParser:
         if t['token'] == 'IO_IN' and self._peek()['token'] == 'LPAREN':
             self._advance()
             self._expect('LPAREN')
-            self._expect('RPAREN')
+            self._expect_rparen()
             return ParseNode('io_in', 'KEYBOARD()')
 
         if t['token'] == 'ID_FUNC' and self._peek()['token'] == 'LPAREN':
@@ -437,7 +469,7 @@ class BuildScriptParser:
                     if self._consume('COMMA'):
                         continue
                     break
-            self._expect('RPAREN')
+            self._expect_rparen()
             node.add(args_node)
             return node
 

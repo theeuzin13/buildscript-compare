@@ -1,0 +1,7 @@
+POWER_ON;
+
+CPU !somar(VOLTAGE $a VOLTAGE $b) {
+    MONITOR($a + $b);
+}
+
+POWER_OFF;
