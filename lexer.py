@@ -36,6 +36,7 @@ class BuildScriptLexer:
 
     def __init__(self, code: str):
         self.code = code
+        self.errors: list[str] = []
 
         token_specification = [
             ('COMMENT', r'//.*'),
@@ -108,50 +109,74 @@ class BuildScriptLexer:
                 continue
 
             if kind == 'MALFORMED_VAR':
-                raise RuntimeError(
+                self.errors.append(
                     f"Erro Léxico: Identificador/variável mal formado: '{value}' na linha {line}, coluna {col}."
                 )
+                col += len(value)
+                continue
 
             if kind == 'MALFORMED_ID':
-                raise RuntimeError(
+                self.errors.append(
                     f"Erro Léxico: Identificador/variável mal formado: '{value}' na linha {line}, coluna {col}."
                 )
+                col += len(value)
+                continue
 
             if kind == 'MALFORMED_FLOAT':
-                raise RuntimeError(
+                self.errors.append(
                     f"Erro Léxico: Número mal formado: '{value}' na linha {line}, coluna {col}."
                 )
+                col += len(value)
+                continue
 
             if kind == 'UNCLOSED_STRING':
-                raise RuntimeError(
+                self.errors.append(
                     f"Erro Léxico: Cadeia de caracteres (string) mal formada ou não fechada: '{value}' na linha {line}, coluna {col}."
                 )
+                col += len(value)
+                continue
 
             if kind == 'MISMATCH':
                 if value == '@':
-                    raise RuntimeError(
+                    self.errors.append(
                         f"Erro Léxico: Símbolo não pertencente ao conjunto de símbolos terminais da linguagem: '@' na linha {line}, coluna {col}."
                     )
-                raise RuntimeError(
-                    f"Erro Léxico: Símbolo não pertencente ao conjunto de símbolos terminais da linguagem: '{value}' na linha {line}, coluna {col}."
-                )
+                else:
+                    self.errors.append(
+                        f"Erro Léxico: Símbolo não pertencente ao conjunto de símbolos terminais da linguagem: '{value}' na linha {line}, coluna {col}."
+                    )
+                col += len(value)
+                continue
+
             if kind in ['VAR', 'ID_FUNC', 'ID']:
                 clean_len = len(value[1:]) if kind in ['VAR', 'ID_FUNC'] else len(value)
                 if clean_len > 30:
-                    raise RuntimeError(
+                    self.errors.append(
                         f"Erro Léxico: Tamanho do identificador '{value}' excede o limite de 30 caracteres na linha {line}, coluna {col}."
                     )
             if kind == 'NUMBER':
                 if len(value) > 15:
-                    raise RuntimeError(
+                    self.errors.append(
                         f"Erro Léxico: Tamanho excessivo do número '{value}' (máximo de 15 dígitos) na linha {line}, coluna {col}."
                     )
 
             tokens.append({'token': kind, 'valor': value, 'line': line, 'col': col})
             col += len(value)
 
+        if len(tokens) > 0 and tokens[0]['token'] != 'PROG_INIT':
+            self.errors.append(
+                f"Erro Léxico: Programa deve iniciar com POWER_ON (encontrado '{tokens[0].get('valor')}') "
+                f"na linha {tokens[0].get('line')}, coluna {tokens[0].get('col')}."
+            )
+
         tokens.append({'token': 'EOF', 'valor': '', 'line': line, 'col': col})
         return tokens
+
+    def get_errors(self) -> list[str]:
+        return self.errors
+
+    def has_errors(self) -> bool:
+        return len(self.errors) > 0
 
     @staticmethod
     def format_tokens(tokens: list[dict]) -> str:

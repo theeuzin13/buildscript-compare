@@ -6,6 +6,7 @@ import io
 import traceback
 import builtins
 from lexer import BuildScriptLexer
+from parser import BuildScriptParser
 from interpreter import BuildScriptInterpreter
 
 PORT = 8000
@@ -61,20 +62,39 @@ class BuildScriptIDEHandler(http.server.BaseHTTPRequestHandler):
             sys.stdout = captured_stdout
 
             tokens_formatted = ""
+            syntax_tree = ""
             execution_output = ""
-            error_message = None
+            errors_list: list[str] = []
+            error_type: str | None = None
 
             try:
                 lexer = BuildScriptLexer(code)
                 tokens = list(lexer.tokenize())
                 tokens_formatted = BuildScriptLexer.format_tokens(tokens)
 
-                interpreter = BuildScriptInterpreter(tokens)
-                interpreter.run()
+                parser = BuildScriptParser(tokens)
+                tree = parser.parse()
 
-                execution_output = captured_stdout.getvalue()
+                lex_errors = lexer.get_errors()
+                syn_errors = parser.get_errors()
+
+                errors_list = lex_errors + syn_errors
+                if lex_errors and syn_errors:
+                    error_type = "lexico_sintatico"
+                elif lex_errors:
+                    error_type = "lexico"
+                elif syn_errors:
+                    error_type = "sintatico"
+
+                if not errors_list:
+                    syntax_tree = BuildScriptParser.format_tree(tree)
+                    interpreter = BuildScriptInterpreter(tokens)
+                    interpreter.run()
+                    execution_output = captured_stdout.getvalue()
             except Exception as e:
-                error_message = str(e)
+                errors_list.append(str(e))
+                if error_type is None:
+                    error_type = "execucao"
                 execution_output = captured_stdout.getvalue()
             finally:
                 sys.stdout = sys.__stdout__
@@ -85,10 +105,12 @@ class BuildScriptIDEHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             
             resp = {
-                "success": error_message is None,
+                "success": len(errors_list) == 0,
                 "tokens": tokens_formatted,
+                "syntax": syntax_tree,
                 "output": execution_output,
-                "error": error_message
+                "errors": errors_list,
+                "errorType": error_type,
             }
             self.wfile.write(json.dumps(resp, ensure_ascii=False).encode('utf-8'))
         else:

@@ -345,6 +345,188 @@
             margin-top: auto;
         }
 
+        /* --- Menu Bar (Abaixo do Header) --- */
+        .menu-bar {
+            background: rgba(15, 23, 42, 0.6);
+            border-bottom: 1px solid var(--border-glass);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            height: 42px;
+            gap: 0.25rem;
+            position: sticky;
+            top: 64px;
+            z-index: 9;
+            backdrop-filter: blur(8px);
+        }
+
+        .menu-item {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 0.5rem 0.875rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            transition: all 0.15s;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+        }
+
+        .menu-item:active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-item i {
+            font-size: 0.9rem;
+        }
+
+        .menu-separator {
+            width: 1px;
+            height: 20px;
+            background: var(--border-glass);
+            margin: 0 0.5rem;
+        }
+
+        @media (max-width: 640px) {
+            .menu-item span {
+                display: none;
+            }
+            .menu-item {
+                padding: 0.5rem 0.65rem;
+            }
+        }
+
+        /* --- Modal Overlay --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.15s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            max-width: 680px;
+            width: 90vw;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            animation: slideUp 0.2s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .modal-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-header h2 i {
+            color: var(--accent);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+
+        .modal-close:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-body table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .modal-body th {
+            text-align: left;
+            color: var(--accent);
+            font-weight: 600;
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid var(--border-glass);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .modal-body td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+        }
+
+        .modal-body td:first-child {
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .modal-body .token-group {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 0.75rem 0.35rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(12px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
         /* --- Scrollbars --- */
         ::-webkit-scrollbar {
             width: 8px;
@@ -388,6 +570,80 @@
         </div>
     </header>
 
+    <!-- Menu Bar -->
+    <div class="menu-bar">
+        <button class="menu-item" onclick="openFile()" title="Abrir arquivo .bs do seu computador">
+            <i class="fa-regular fa-folder-open"></i>
+            <span>Abrir</span>
+        </button>
+        <button class="menu-item" onclick="saveFile()" title="Salvar código em um arquivo .bs">
+            <i class="fa-regular fa-floppy-disk"></i>
+            <span>Salvar</span>
+        </button>
+        <div class="menu-separator"></div>
+        <button class="menu-item" onclick="showManual()" title="Consultar lista de tokens e instruções">
+            <i class="fa-regular fa-book"></i>
+            <span>Manual</span>
+        </button>
+        <div class="menu-separator"></div>
+        <button class="menu-item" onclick="clearEditor()" title="Limpar o editor">
+            <i class="fa-regular fa-trash-can"></i>
+            <span>Limpar</span>
+        </button>
+    </div>
+
+    <!-- Input oculto para abrir arquivos -->
+    <input type="file" id="fileInput" accept=".bs,.txt" style="display:none" onchange="handleFileOpen(event)">
+
+    <!-- Modal do Manual de Instruções -->
+    <div class="modal-overlay" id="manualModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2><i class="fa-regular fa-book"></i> Manual de Instruções — BuildScript</h2>
+                <button class="modal-close" onclick="closeManual()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <table>
+                    <tr><th>Token</th><th>Descrição</th></tr>
+                    <tr><td class="token-group" colspan="2">🔧 Estrutura do Programa</td></tr>
+                    <tr><td>POWER_ON;</td><td>Inicia o programa (obrigatório)</td></tr>
+                    <tr><td>POWER_OFF;</td><td>Finaliza o programa (obrigatório)</td></tr>
+                    <tr><td class="token-group" colspan="2">📦 Variáveis e Tipos</td></tr>
+                    <tr><td>$nome</td><td>Variável (identificador até 30 caracteres)</td></tr>
+                    <tr><td>SLOT</td><td>Tipo: inteiro</td></tr>
+                    <tr><td>VOLTAGE</td><td>Tipo: ponto flutuante</td></tr>
+                    <tr><td>LABEL</td><td>Tipo: cadeia de caracteres</td></tr>
+                    <tr><td>LED</td><td>Tipo: booleano</td></tr>
+                    <tr><td class="token-group" colspan="2">🧠 Funções</td></tr>
+                    <tr><td>CPU</td><td>Define uma função</td></tr>
+                    <tr><td>!nome()</td><td>Chama uma função</td></tr>
+                    <tr><td>EJECT</td><td>Retorna um valor da função</td></tr>
+                    <tr><td class="token-group" colspan="2">🔀 Controle de Fluxo</td></tr>
+                    <tr><td>RUNCIRCUIT (cond) { }</td><td>Se / If</td></tr>
+                    <tr><td>SHORTCIRCUIT { }</td><td>Senão / Else</td></tr>
+                    <tr><td>RUNCOOLER (init; cond; inc) { } STOPCOOLER;</td><td>Loop / For</td></tr>
+                    <tr><td class="token-group" colspan="2">📥 Entrada / Saída</td></tr>
+                    <tr><td>MONITOR(...)</td><td>Imprime na saída padrão</td></tr>
+                    <tr><td>KEYBOARD()</td><td>Lê uma linha da entrada padrão</td></tr>
+                    <tr><td class="token-group" colspan="2">🧮 Operadores</td></tr>
+                    <tr><td>=</td><td>Atribuição</td></tr>
+                    <tr><td>+ - * /</td><td>Aritméticos</td></tr>
+                    <tr><td>== != &lt; &gt; &lt;= &gt;=</td><td>Comparação</td></tr>
+                    <tr><td>AND OR NOT</td><td>Lógicos</td></tr>
+                    <tr><td>++ --</td><td>Incremento / Decremento</td></tr>
+                    <tr><td class="token-group" colspan="2">📝 Regras</td></tr>
+                    <tr><td colspan="2" style="font-family: 'Inter', sans-serif; line-height: 1.6;">
+                        • Identificadores: máximo 30 caracteres<br>
+                        • Números: máximo 15 dígitos<br>
+                        • Strings entre aspas duplas: "texto"<br>
+                        • Todo comando termina com ponto e vírgula (<strong>;</strong>)<br>
+                        • Máximo de 3 parâmetros por função
+                    </td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- Layout Central -->
     <main>
         
@@ -423,6 +679,9 @@
                 <div class="tab" onclick="switchTab('tokensTab', this)">
                     <i class="fa-solid fa-list-ul"></i> Tabela de Tokens
                 </div>
+                <div class="tab" onclick="switchTab('syntaxTab', this)">
+                    <i class="fa-solid fa-tree"></i> Árvore Sintática
+                </div>
                 <div class="tab" onclick="switchTab('errorsTab', this)">
                     <i class="fa-solid fa-circle-exclamation"></i> Status / Erros
                 </div>
@@ -438,7 +697,12 @@
                 <div class="tokens-output" id="tokensOutput"><span style="color: var(--text-muted); font-style: italic;">A tabela de tokens aparecerá aqui após uma tokenização léxica bem-sucedida.</span></div>
             </div>
 
-            <!-- Aba 3: Erros e Status -->
+            <!-- Aba 3: Árvore Sintática -->
+            <div class="tab-content" id="syntaxTab">
+                <div class="tokens-output" id="syntaxOutput"><span style="color: var(--text-muted); font-style: italic;">A árvore sintática aparecerá aqui após uma análise sintática bem-sucedida.</span></div>
+            </div>
+
+            <!-- Aba 4: Erros e Status -->
             <div class="tab-content" id="errorsTab">
                 <div id="statusOutput">
                     <div class="success-box" style="background: transparent; border: none; color: var(--text-muted);">
@@ -538,6 +802,68 @@ CPU !monitorar_aquecimento(VOLTAGE $temp_atual, SLOT $fans_ativos) {
 POWER_OFF;`
         };
 
+        // === Menu: Abrir arquivo ===
+        function openFile() {
+            document.getElementById("fileInput").click();
+        }
+
+        function handleFileOpen(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById("codeEditor").value = e.target.result;
+                document.getElementById("exampleSelect").value = "custom";
+            };
+            reader.readAsText(file, "UTF-8");
+            event.target.value = "";
+        }
+
+        // === Menu: Salvar arquivo ===
+        function saveFile() {
+            const code = document.getElementById("codeEditor").value;
+            if (!code.trim()) {
+                alert("Nada para salvar — o editor está vazio.");
+                return;
+            }
+            const blob = new Blob([code], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "programa.bs";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // === Menu: Manual ===
+        function showManual() {
+            document.getElementById("manualModal").classList.add("active");
+        }
+
+        function closeManual() {
+            document.getElementById("manualModal").classList.remove("active");
+        }
+
+        // Fecha o modal ao clicar fora da caixa
+        document.addEventListener("click", (e) => {
+            const modal = document.getElementById("manualModal");
+            if (e.target === modal) closeManual();
+        });
+
+        // Fecha o modal com a tecla ESC
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeManual();
+        });
+
+        // === Menu: Limpar editor ===
+        function clearEditor() {
+            if (document.getElementById("codeEditor").value.trim() && !confirm("Tem certeza? O código atual será perdido.")) return;
+            document.getElementById("codeEditor").value = "";
+            document.getElementById("exampleSelect").value = "";
+        }
+
         // Carrega o exemplo selecionado no textarea
         function loadExample() {
             const select = document.getElementById("exampleSelect");
@@ -612,6 +938,13 @@ POWER_OFF;`
                     document.getElementById("tokensOutput").innerHTML = "<span style='color: var(--text-muted); font-style: italic;'>Tabela de tokens indisponível por erro de compilação.</span>";
                 }
 
+                // 2.5 Árvore Sintática
+                if (res.syntax) {
+                    document.getElementById("syntaxOutput").textContent = res.syntax;
+                } else {
+                    document.getElementById("syntaxOutput").innerHTML = "<span style='color: var(--text-muted); font-style: italic;'>Árvore sintática indisponível por erro de análise.</span>";
+                }
+
                 // 3. Status e Erros
                 const statusDiv = document.getElementById("statusOutput");
                 if (res.success) {
@@ -621,25 +954,30 @@ POWER_OFF;`
                             <div>
                                 <strong>Compilação e Execução Bem Sucedida!</strong><br>
                                 <span style="font-size: 0.85rem; color: var(--text-muted);">
-                                    O analisador léxico tokenizou com sucesso e o interpretador executou todas as instruções sem falhas.
+                                    Análise léxica, sintática e execução concluídas sem falhas.
                                 </span>
                             </div>
                         </div>
                     `;
                 } else {
-                    statusDiv.innerHTML = `
-                        <div class="error-box">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                            <div>
-                                <strong>Falha na Compilação / Execução:</strong><br>
-                                <p style="margin-top: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">
-                                    ${res.error}
-                                </p>
-                            </div>
-                        </div>
-                    `;
+                    const errorTitle = res.errorType === "lexico" ? "Erro Léxico" :
+                                       res.errorType === "sintatico" ? "Erro Sintático" :
+                                       res.errorType === "lexico_sintatico" ? "Erros Léxico e Sintático" :
+                                       "Erro de Execução";
+                    const plural = res.errors && res.errors.length > 1 ? "s" : "";
+                    const count = res.errors ? res.errors.length : 0;
+                    let errorHtml = `<div class="error-box">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <div>
+                            <strong>${errorTitle}${plural} (${count} erro${plural} encontrado${plural}):</strong><br>
+                            <div style="margin-top: 0.5rem;">`;
+                    for (const err of res.errors) {
+                        errorHtml += `<p style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; padding: 0.25rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">${err}</p>`;
+                    }
+                    errorHtml += `</div></div></div>`;
+                    statusDiv.innerHTML = errorHtml;
                     // Redireciona para a aba de erros automaticamente
-                    switchTab('errorsTab', document.querySelectorAll('.tab')[2]);
+                    switchTab('errorsTab', document.querySelectorAll('.tab')[3]);
                 }
 
             } catch (e) {
