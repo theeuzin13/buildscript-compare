@@ -679,7 +679,7 @@
             
             <div class="editor-container">
                 <div class="line-numbers" id="lineNumbers">1</div>
-                <textarea class="code-editor" id="codeEditor" placeholder="// Digite seu código BuildScript aqui...&#10;// Ou selecione um dos exemplos acima!" spellcheck="false"></textarea>
+                <textarea class="code-editor" id="codeEditor" placeholder="// Digite seu código BuildScript aqui...&#10;// Ou selecione um dos exemplos acima!" spellcheck="false" oninput="updateLineNumbers()" onscroll="document.getElementById('lineNumbers').scrollTop=this.scrollTop"></textarea>
             </div>
             
             <div class="controls">
@@ -744,6 +744,8 @@
     </footer>
 
     <script>
+        document.addEventListener('DOMContentLoaded', updateLineNumbers);
+
         // Banco de dados local dos scripts de exemplo
         const EXAMPLES = {
             exemplo1: `POWER_ON;
