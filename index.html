@@ -590,6 +590,11 @@
             <i class="fa-regular fa-trash-can"></i>
             <span>Limpar</span>
         </button>
+        <div class="menu-separator"></div>
+        <button class="menu-item" onclick="exitIDE()" title="Encerrar o programa">
+            <i class="fa-solid fa-power-off"></i>
+            <span>Sair</span>
+        </button>
     </div>
 
     <!-- Input oculto para abrir arquivos -->
@@ -802,6 +807,8 @@ CPU !monitorar_aquecimento(VOLTAGE $temp_atual, SLOT $fans_ativos) {
 POWER_OFF;`
         };
 
+        let currentFileName = "programa.bs";
+
         // === Menu: Abrir arquivo ===
         function openFile() {
             document.getElementById("fileInput").click();
@@ -810,6 +817,7 @@ POWER_OFF;`
         function handleFileOpen(event) {
             const file = event.target.files[0];
             if (!file) return;
+            currentFileName = file.name;
             const reader = new FileReader();
             reader.onload = (e) => {
                 document.getElementById("codeEditor").value = e.target.result;
@@ -826,11 +834,16 @@ POWER_OFF;`
                 alert("Nada para salvar — o editor está vazio.");
                 return;
             }
+            let name = currentFileName;
+            // se a extensão for .txt, troca para .bs
+            if (name.endsWith(".txt")) {
+                name = name.slice(0, -4) + ".bs";
+            }
             const blob = new Blob([code], { type: "text/plain;charset=utf-8" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = "programa.bs";
+            a.download = name;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -864,18 +877,30 @@ POWER_OFF;`
             document.getElementById("exampleSelect").value = "";
         }
 
+        // === Menu: Sair ===
+        async function exitIDE() {
+            if (!confirm("Deseja realmente encerrar o programa? O servidor será parado.")) return;
+            try {
+                await fetch('/shutdown');
+            } catch (e) {}
+            document.getElementById("codeEditor").value = "// Servidor encerrado.\n// Feche esta aba ou pressione CTRL+W para sair.";
+            document.querySelectorAll('.menu-item button, .btn-run').forEach(el => el.disabled = true);
+        }
+
         // Carrega o exemplo selecionado no textarea
         function loadExample() {
             const select = document.getElementById("exampleSelect");
             const val = select.value;
             if (EXAMPLES[val]) {
                 document.getElementById("codeEditor").value = EXAMPLES[val];
+                currentFileName = val + ".bs";
                 // Ajusta entradas de teclado padrão se for o exemplo 1
                 if (val === "exemplo1") {
                     document.getElementById("keyboardInputs").value = "RTX 4070";
                 }
             } else if (val === "custom") {
                 document.getElementById("codeEditor").value = "";
+                currentFileName = "programa.bs";
             }
         }
 
@@ -960,21 +985,28 @@ POWER_OFF;`
                         </div>
                     `;
                 } else {
-                    const errorTitle = res.errorType === "lexico" ? "Erro Léxico" :
-                                       res.errorType === "sintatico" ? "Erro Sintático" :
-                                       res.errorType === "lexico_sintatico" ? "Erros Léxico e Sintático" :
-                                       "Erro de Execução";
-                    const plural = res.errors && res.errors.length > 1 ? "s" : "";
-                    const count = res.errors ? res.errors.length : 0;
-                    let errorHtml = `<div class="error-box">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                        <div>
-                            <strong>${errorTitle}${plural} (${count} erro${plural} encontrado${plural}):</strong><br>
-                            <div style="margin-top: 0.5rem;">`;
-                    for (const err of res.errors) {
-                        errorHtml += `<p style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; padding: 0.25rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">${err}</p>`;
+                    let errorHtml = '<div style="display: flex; flex-direction: column; gap: 1rem;">';
+
+                    function buildErrorSection(title, icon, color, errors) {
+                        if (!errors || errors.length === 0) return '';
+                        const plural = errors.length > 1 ? 's' : '';
+                        let html = `<div class="error-box" style="border-color: rgba(${color}, 0.3);">
+                            <i class="${icon}" style="color: rgb(${color});"></i>
+                            <div style="flex: 1;">
+                                <strong style="color: rgb(${color});">${title} (${errors.length} erro${plural} encontrado${plural}):</strong>
+                                <div style="margin-top: 0.5rem;">`;
+                        for (const err of errors) {
+                            html += `<p style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; padding: 0.25rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">${err}</p>`;
+                        }
+                        html += `</div></div></div>`;
+                        return html;
                     }
-                    errorHtml += `</div></div></div>`;
+
+                    errorHtml += buildErrorSection('Erros Léxicos', 'fa-solid fa-spell-check', '245, 158, 11', res.lexErrors);
+                    errorHtml += buildErrorSection('Erros Sintáticos', 'fa-solid fa-code', '239, 68, 68', res.synErrors);
+                    errorHtml += buildErrorSection('Erros de Execução', 'fa-solid fa-bug', '168, 85, 247', res.runErrors);
+
+                    errorHtml += '</div>';
                     statusDiv.innerHTML = errorHtml;
                     // Redireciona para a aba de erros automaticamente
                     switchTab('errorsTab', document.querySelectorAll('.tab')[3]);

@@ -1,0 +1,9 @@
+POWER_ON;
+
+SLOT $tamanho_excede_trinta_caracteres;
+
+SLOT $x = 9999999999999999;
+
+SLOT $a = @ 10;
+
+POWER_OFF;

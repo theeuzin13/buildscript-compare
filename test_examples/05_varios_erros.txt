@@ -1,0 +1,8 @@
+POWER_ON;
+$Erro1 = 10 +;
+
+CPU !calcular(
+    MONITOR("teste");
+}
+
+@ 42;

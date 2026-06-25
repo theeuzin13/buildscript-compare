@@ -1,0 +1,6 @@
+POWER_ON;
+$VarRuim = 10;
+
+CPU !foo(VOLTAGE $x) {
+    MONITOR($x);
+POWER_OFF;
